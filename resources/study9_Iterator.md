@@ -142,3 +142,4 @@ function readLinesSync(file) {
 3. for...of循环可以使用的范围包括`数组、Set 和 Map 结构、某些类似数组的对象`（比如arguments对象、DOM NodeList 对象）、后文的 `Generator 对象`，以及`字符串`。
 4. JavaScript 原有的`for...in`循环，只能获得对象的`键名`，不能直接获取键值。ES6 提供for...of循环，允许遍历获得`键值`。
 5. 对于普通的对象，for...of结构不能直接使用，会报错，必须部署了 Iterator 接口后才能使用。但是，这样情况下，for...in循环依然可以用来遍历键名
+
