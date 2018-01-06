@@ -149,21 +149,31 @@ observe(print);
 
 person.name = "李四";
 
-let iterable = {
-    0: 'a',
-    1: 'b',
-    2: 'c',
-    length: 3,
-    [Symbol.iterator]: Array.prototype[Symbol.iterator]
-};
-for (let item of iterable) {
-    console.log(item); // 'a', 'b', 'c'
+function timeout(ms) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(resolve, ms, 'done');
+    });
 }
 
-var es6 = new Map();
-es6.set("edition", 6);
-es6.set("committee", "TC39");
-es6.set("standard", "ECMA-262");
-for (var [name, value] of es6) {
-    console.log(name + ": " + value);
-}
+timeout(3000).then(function (value) {
+    console.log(value);
+});
+
+// const promise = new Promise(function(resolve,reject){
+//     //resolve("hahahah");
+//     reject(new Error("error"));
+// });
+
+// //promise.then((val) => console.log(val),(val)=>console.log(val));
+// promise.catch((val)=>console.log(val));
+
+var thenable = {
+    then: function then(resolve, reject) {
+        resolve(42);
+    }
+};
+
+var p1 = Promise.resolve(thenable);
+p1.then(function (value) {
+    console.log(value); // 42
+});
