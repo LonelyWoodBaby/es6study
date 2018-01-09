@@ -85,3 +85,115 @@ b.next(13) // { value:42, done:true }
 如果向next方法提供参数，返回结果就完全不一样了。上面代码第一次调用b的next方法时，返回x+1的值6；第二次调用next方法，将上一次yield表达式的值设为12，因此y等于24，返回y / 3的值8；第三次调用next方法，将上一次yield表达式的值设为13，因此z等于13，这时x等于5，y等于24，所以return语句的值等于42。
 */
 ````
+
+## for...of 循环
+- for...of循环可以`自动遍历` Generator 函数时生成的Iterator对象，且此时`不再需要调用next`方法。
+````javascript
+function* fibonacci() {
+  let [prev, curr] = [0, 1];
+  for (;;) {
+    [prev, curr] = [curr, prev + curr];
+    yield curr;
+  }
+}
+
+for (let n of fibonacci()) {
+  if (n > 1000) break;
+  console.log(n);
+}
+
+//利用generator和for of实现斐波那契数列
+````
+- 除了for...of循环以外，`扩展运算符（...）`、`解构赋值`和`Array.from`方法内部调用的，都是遍历器接口。这意味着，它们都可以将 Generator 函数返回的 Iterator 对象，作为参数。
+
+## Generator.prototype.throw() 
+- Generator 函数返回的遍历器对象，都有一个`throw`方法，可以在函数体外抛出错误，然后在 Generator 函数体内捕获。
+- throw方法可以接受一个参数，该参数会被`catch语句`接收，建议抛出`Error对象的实例`。
+
+## Generator.prototype.return()
+- Generator 函数返回的遍历器对象，还有一个`return方法`，可以`返回给定的值`，并且`终结遍历` Generator 函数。
+- 如果return方法调用时，不提供参数，则返回值的`value属性为undefined`。
+- Generator 函数内部有try...finally代码块，那么return方法会推迟到`finally代码块执行完`再执行
+````javascript
+function* numbers () {
+    yield 1;
+    try {
+        yield 2;
+        yield 3;
+    } finally {
+        yield 4;
+        yield 5;
+    }
+    yield 6;
+}
+var g = numbers();
+g.next() // { value: 1, done: false }
+g.next() // { value: 2, done: false }
+g.return(7) // { value: 4, done: false }
+g.next() // { value: 5, done: false }
+g.next() // { value: 7, done: true }
+````
+
+## next()、throw()、return() 的共同点
+- next()、throw()、return()这三个方法本质上是同一件事，可以放在一起理解。它们的作用都是让 Generator 函数恢复执行，并且使用不同的语句替换yield表达式。
+- next()是将yield表达式替换成一个值
+- throw()是将yield表达式替换成一个throw语句。
+- return()是将yield表达式替换成一个return语句。
+
+## yield* 表达式
+1. 如果在 Generator 函数内部，调用另一个 Generator 函数，默认情况下是没有效果的。
+2. 需要用到`yield*表达式`，用来在一个 Generator 函数里面执行`另一个` Generator 函数。
+````javascript
+function* bar() {
+  yield 'x';
+  yield* foo();
+  yield 'y';
+}
+// 等同于
+function* bar() {
+  yield 'x';
+  for (let v of foo()) {
+    yield v;
+  }
+  yield 'y';
+}
+for (let v of bar()){
+  console.log(v);
+}
+````
+3. 如果yield表达式后面跟的是一个遍历器对象，需要在yield表达式后面加上`星号`，表明它返回的是一个遍历器对象。这被称为yield*表达式
+4. yield*后面的 Generator 函数（`没有return语句`时），等同于在 Generator 函数内部，`部署一个for...of循环`。
+5. 任何数据结构只要有 Iterator 接口，就可以被yield*遍历。
+
+## 作为对象属性的 Generator 函数 
+1. 属性前面有一个`星号`，表示这个属性是一个 Generator 函数。
+````javascript
+let obj = {
+  * myGeneratorMethod() {
+    ···
+  }
+};
+//等同于
+let obj = {
+  myGeneratorMethod: function* () {
+    // ···
+  }
+};
+````
+
+## 应用
+http://es6.ruanyifeng.com/#docs/generator#%E5%BA%94%E7%94%A8
+````javascript
+//使用generator函数执行逐行读取文件
+function* numbers() {
+  let file = new FileReader("numbers.txt");
+  try {
+    while(!file.eof) {
+      yield parseInt(file.readLine(), 10);
+    }
+  } finally {
+    file.close();
+  }
+}
+````
+
